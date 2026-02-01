@@ -721,6 +721,10 @@
             formatEventDate(dateString) {
                 if (!dateString) return '';
                 const date = new Date(dateString);
+                // Validate the date is valid
+                if (isNaN(date.getTime())) {
+                    return dateString; // Return original string if date is invalid
+                }
                 return date.toLocaleDateString();
             }
 
@@ -732,17 +736,17 @@
                     if (parts.length < 2) return timeString; // Return as-is if not in expected format
                     
                     const hour = parseInt(parts[0], 10);
-                    const minuteNum = parseInt(parts[1], 10);
+                    const minute = parseInt(parts[1], 10);
                     
                     // Validate hour and minute ranges
-                    if (isNaN(hour) || isNaN(minuteNum) || hour < 0 || hour > 23 || minuteNum < 0 || minuteNum > 59) {
+                    if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
                         return timeString; // Return original if validation fails
                     }
                     
                     // Convert to 12-hour format
                     const period = hour >= 12 ? 'PM' : 'AM';
                     const hour12 = hour % 12 || 12;
-                    const minuteStr = minuteNum.toString().padStart(2, '0');
+                    const minuteStr = minute.toString().padStart(2, '0');
                     
                     return `${hour12}:${minuteStr} ${period}`;
                 } catch (error) {
