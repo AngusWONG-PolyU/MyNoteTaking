@@ -4,6 +4,12 @@ from datetime import datetime
 
 note_bp = Blueprint('note', __name__)
 
+def validate_string_length(value, field_name, max_length=200):
+    """Validate that a string field does not exceed the maximum length"""
+    if value and len(value) > max_length:
+        return jsonify({'error': f'{field_name} must not exceed {max_length} characters'}), 400
+    return None
+
 @note_bp.route('/notes', methods=['GET'])
 def get_notes():
     """Get all notes, ordered by most recently updated"""
@@ -23,13 +29,15 @@ def create_note():
         # Add new fields with validation
         if 'location' in data:
             location = data['location']
-            if location and len(location) > 200:
-                return jsonify({'error': 'Location must not exceed 200 characters'}), 400
+            error = validate_string_length(location, 'Location')
+            if error:
+                return error
             note.location = location
         if 'tags' in data:
             tags = data['tags']
-            if tags and len(tags) > 200:
-                return jsonify({'error': 'Tags must not exceed 200 characters'}), 400
+            error = validate_string_length(tags, 'Tags')
+            if error:
+                return error
             note.tags = tags
         if 'event_date' in data and data['event_date']:
             try:
@@ -74,13 +82,15 @@ def update_note(note_id):
         
         if 'location' in data:
             location = data['location']
-            if location and len(location) > 200:
-                return jsonify({'error': 'Location must not exceed 200 characters'}), 400
+            error = validate_string_length(location, 'Location')
+            if error:
+                return error
             note.location = location
         if 'tags' in data:
             tags = data['tags']
-            if tags and len(tags) > 200:
-                return jsonify({'error': 'Tags must not exceed 200 characters'}), 400
+            error = validate_string_length(tags, 'Tags')
+            if error:
+                return error
             note.tags = tags
         if 'event_date' in data:
             if data['event_date']:
