@@ -8,12 +8,12 @@ def validate_string_field(field_name, field_value, max_length=200):
     """Validate that a field is a string and doesn't exceed max length.
     
     Args:
-        field_name: Name of the field for error messages
+        field_name: Name of the field for error messages (use capitalized form for display)
         field_value: Value to validate
         max_length: Maximum allowed length (default: 200)
     
     Returns:
-        tuple: (error_response, status_code) if validation fails, None if valid
+        Flask Response with status code 400 if validation fails, None if valid
     """
     if field_value is not None:
         if not isinstance(field_value, str):
