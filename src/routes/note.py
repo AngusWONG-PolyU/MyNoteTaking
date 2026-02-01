@@ -67,9 +67,11 @@ def update_note(note_id):
         note.content = data.get('content', note.content)
         
         if 'location' in data:
-            note.location = data['location']
+            location = data.get('location')
+            note.location = location if location else None
         if 'tags' in data:
-            note.tags = data['tags']
+            tags = data.get('tags')
+            note.tags = tags if tags else None
         if 'event_date' in data:
             if data['event_date']:
                 try:
