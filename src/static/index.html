@@ -726,16 +726,22 @@
 
             formatEventTime(timeString) {
                 if (!timeString) return '';
-                // Parse time string (HH:MM:SS format)
-                const [hours, minutes] = timeString.split(':');
-                const hour = parseInt(hours, 10);
-                const minute = parseInt(minutes, 10);
-                
-                // Convert to 12-hour format
-                const period = hour >= 12 ? 'PM' : 'AM';
-                const hour12 = hour % 12 || 12;
-                
-                return `${hour12}:${minutes.padStart(2, '0')} ${period}`;
+                try {
+                    // Parse time string (HH:MM:SS format)
+                    const parts = timeString.split(':');
+                    if (parts.length < 2) return timeString; // Return as-is if not in expected format
+                    
+                    const hour = parseInt(parts[0], 10);
+                    const minute = parts[1]; // Keep as string for padding
+                    
+                    // Convert to 12-hour format
+                    const period = hour >= 12 ? 'PM' : 'AM';
+                    const hour12 = hour % 12 || 12;
+                    
+                    return `${hour12}:${minute.padStart(2, '0')} ${period}`;
+                } catch (error) {
+                    return timeString; // Return original string if parsing fails
+                }
             }
         }
 
