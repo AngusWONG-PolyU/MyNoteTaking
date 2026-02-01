@@ -7,6 +7,10 @@ logger = logging.getLogger(__name__)
 
 note_bp = Blueprint('note', __name__)
 
+def validate_string_length(value, field_name, max_length=200):
+    """Validate that a string field does not exceed the maximum length"""
+    if value and len(value) > max_length:
+        return jsonify({'error': f'{field_name} must not exceed {max_length} characters'}), 400
 def parse_time_string(time_str):
     """
     Parse a time string in various formats.
@@ -57,7 +61,7 @@ def create_note():
         
         note = Note(title=data['title'], content=data['content'])
         
-        # Add new fields
+        # Add new fields with validation
         if 'location' in data:
             if data['location'] is not None:
                 if not isinstance(data['location'], str):
