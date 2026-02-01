@@ -481,7 +481,7 @@
                         <div class="note-tags">${this.escapeHtml(this.formatTags(note.tags))}</div>
                         <div class="note-date">
                             ${this.formatDate(note.updated_at)}
-                            ${note.event_date ? ` • ${this.escapeHtml(note.event_date)} ${note.event_time ? this.escapeHtml(note.event_time) : ''}` : ''}
+                            ${note.event_date ? ` • ${this.escapeHtml(this.formatEventDate(note.event_date))} ${note.event_time ? this.escapeHtml(this.formatEventTime(note.event_time)) : ''}` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -667,7 +667,7 @@
                         <div class="note-tags">${this.escapeHtml(this.formatTags(note.tags))}</div>
                         <div class="note-date">
                             ${this.formatDate(note.updated_at)}
-                            ${note.event_date ? ` • ${this.escapeHtml(note.event_date)} ${this.escapeHtml(note.event_time || '')}` : ''}
+                            ${note.event_date ? ` • ${this.escapeHtml(this.formatEventDate(note.event_date))} ${this.escapeHtml(this.formatEventTime(note.event_time || ''))}` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -716,6 +716,26 @@
                 } else {
                     return date.toLocaleDateString();
                 }
+            }
+
+            formatEventDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                return date.toLocaleDateString();
+            }
+
+            formatEventTime(timeString) {
+                if (!timeString) return '';
+                // Parse time string (HH:MM:SS format)
+                const [hours, minutes] = timeString.split(':');
+                const hour = parseInt(hours, 10);
+                const minute = parseInt(minutes, 10);
+                
+                // Convert to 12-hour format
+                const period = hour >= 12 ? 'PM' : 'AM';
+                const hour12 = hour % 12 || 12;
+                
+                return `${hour12}:${minutes.padStart(2, '0')} ${period}`;
             }
         }
 
