@@ -36,7 +36,9 @@ def parse_time_string(time_str):
             continue
     
     # If all formats fail, log a warning
-    logger.warning(f"Failed to parse time string: '{time_str}'. Supported formats: HH:MM, HH:MM:SS, HH:MM:SS.ffffff")
+    # Sanitize input for logging to prevent log injection
+    sanitized_input = repr(time_str)[:100]  # Limit length and use repr for safety
+    logger.warning(f"Failed to parse time string: {sanitized_input}. Supported formats: HH:MM, HH:MM:SS, HH:MM:SS.ffffff")
     return None
 
 @note_bp.route('/notes', methods=['GET'])
