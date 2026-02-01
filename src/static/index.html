@@ -481,7 +481,7 @@
                         <div class="note-tags">${this.escapeHtml(this.formatTags(note.tags))}</div>
                         <div class="note-date">
                             ${this.formatDate(note.updated_at)}
-                            ${note.event_date ? ` • ${note.event_date} ${note.event_time || ''}` : ''}
+                            ${note.event_date ? ` • ${this.escapeHtml(note.event_date)} ${note.event_time ? this.escapeHtml(note.event_time) : ''}` : ''}
                         </div>
                     </div>
                 `).join('');
