@@ -664,7 +664,7 @@
                         <div class="note-title">${this.escapeHtml(note.title || 'Untitled')}</div>
                         <div class="note-preview">${this.escapeHtml(note.content || 'No content')}</div>
                         ${note.location ? `<div class="note-location">📍 ${this.escapeHtml(note.location)}</div>` : ''}
-                        <div class="note-tags">${this.escapeHtml(this.formatTags(note.tags))}</div>
+                        ${note.tags ? `<div class="note-tags">${this.escapeHtml(this.formatTags(note.tags))}</div>` : ''}
                         <div class="note-date">
                             ${this.formatDate(note.updated_at)}
                             ${note.event_date ? ` • ${this.escapeHtml(note.event_date)} ${this.escapeHtml(note.event_time || '')}` : ''}
