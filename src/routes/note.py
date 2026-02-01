@@ -10,7 +10,7 @@ note_bp = Blueprint('note', __name__)
 def parse_time_string(time_str):
     """
     Parse a time string with support for multiple formats.
-    Supports: HH:MM, HH:MM:SS, HH:MM:SS.sss
+    Supports: HH:MM, HH:MM:SS, HH:MM:SS.ffffff (fractional seconds)
     Returns a time object or None if parsing fails.
     """
     if not time_str:
@@ -18,7 +18,7 @@ def parse_time_string(time_str):
     
     # List of time formats to try, in order of specificity
     time_formats = [
-        '%H:%M:%S.%f',  # HH:MM:SS.sss (with milliseconds)
+        '%H:%M:%S.%f',  # HH:MM:SS.ffffff (with fractional seconds - up to microseconds)
         '%H:%M:%S',     # HH:MM:SS
         '%H:%M',        # HH:MM
     ]
@@ -30,7 +30,7 @@ def parse_time_string(time_str):
             continue
     
     # If all formats fail, log a warning and return None
-    logger.warning(f"Failed to parse time string: '{time_str}'. Supported formats: HH:MM, HH:MM:SS, HH:MM:SS.sss")
+    logger.warning(f"Failed to parse time string: '{time_str}'. Supported formats: HH:MM, HH:MM:SS, HH:MM:SS.ffffff")
     return None
 
 @note_bp.route('/notes', methods=['GET'])
