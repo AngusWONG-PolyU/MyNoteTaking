@@ -29,6 +29,7 @@ def create_note():
             try:
                 note.event_date = datetime.strptime(data['event_date'], '%Y-%m-%d').date()
             except ValueError:
+                # Silently ignore invalid date format; field will remain unset
                 pass
         if 'event_time' in data and data['event_time']:
             try:
@@ -38,6 +39,7 @@ def create_note():
                 elif len(time_str) == 8: # HH:MM:SS
                     note.event_time = datetime.strptime(time_str, '%H:%M:%S').time()
             except ValueError:
+                # Silently ignore invalid time format; field will remain unset
                 pass
                 
         db.session.add(note)
@@ -77,6 +79,7 @@ def update_note(note_id):
                 try:
                     note.event_date = datetime.strptime(data['event_date'], '%Y-%m-%d').date()
                 except ValueError:
+                    # Silently ignore invalid date format; field will keep existing value
                     pass
             else:
                 note.event_date = None
@@ -89,6 +92,7 @@ def update_note(note_id):
                     elif len(time_str) == 8:
                         note.event_time = datetime.strptime(time_str, '%H:%M:%S').time()
                 except ValueError:
+                    # Silently ignore invalid time format; field will keep existing value
                     pass
             else:
                 note.event_time = None
