@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from src.models.note import Note, db
+from datetime import datetime
 
 note_bp = Blueprint('note', __name__)
 
@@ -18,6 +19,27 @@ def create_note():
             return jsonify({'error': 'Title and content are required'}), 400
         
         note = Note(title=data['title'], content=data['content'])
+        
+        # Add new fields
+        if 'location' in data:
+            note.location = data['location']
+        if 'tags' in data:
+            note.tags = data['tags']
+        if 'event_date' in data and data['event_date']:
+            try:
+                note.event_date = datetime.strptime(data['event_date'], '%Y-%m-%d').date()
+            except ValueError:
+                pass
+        if 'event_time' in data and data['event_time']:
+            try:
+                time_str = data['event_time']
+                if len(time_str) == 5: # HH:MM
+                    note.event_time = datetime.strptime(time_str, '%H:%M').time()
+                elif len(time_str) == 8: # HH:MM:SS
+                    note.event_time = datetime.strptime(time_str, '%H:%M:%S').time()
+            except ValueError:
+                pass
+                
         db.session.add(note)
         db.session.commit()
         return jsonify(note.to_dict()), 201
@@ -43,6 +65,32 @@ def update_note(note_id):
         
         note.title = data.get('title', note.title)
         note.content = data.get('content', note.content)
+        
+        if 'location' in data:
+            note.location = data['location']
+        if 'tags' in data:
+            note.tags = data['tags']
+        if 'event_date' in data:
+            if data['event_date']:
+                try:
+                    note.event_date = datetime.strptime(data['event_date'], '%Y-%m-%d').date()
+                except ValueError:
+                    pass
+            else:
+                note.event_date = None
+        if 'event_time' in data:
+            if data['event_time']:
+                try:
+                    time_str = data['event_time']
+                    if len(time_str) == 5:
+                        note.event_time = datetime.strptime(time_str, '%H:%M').time()
+                    elif len(time_str) == 8:
+                        note.event_time = datetime.strptime(time_str, '%H:%M:%S').time()
+                except ValueError:
+                    pass
+            else:
+                note.event_time = None
+        
         db.session.commit()
         return jsonify(note.to_dict())
     except Exception as e:

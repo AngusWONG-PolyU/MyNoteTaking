@@ -8,6 +8,10 @@ class Note(db.Model):
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    location = db.Column(db.String(200), nullable=True)
+    tags = db.Column(db.String(200), nullable=True)
+    event_date = db.Column(db.Date, nullable=True)
+    event_time = db.Column(db.Time, nullable=True)
     
     def __repr__(self):
         return f'<Note {self.title}>'
@@ -17,6 +21,10 @@ class Note(db.Model):
             'id': self.id,
             'title': self.title,
             'content': self.content,
+            'location': self.location,
+            'tags': self.tags,
+            'event_date': self.event_date.isoformat() if self.event_date else None,
+            'event_time': self.event_time.isoformat() if self.event_time else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

@@ -321,6 +321,21 @@
         .notes-list::-webkit-scrollbar-thumb:hover {
             background: #5a6fd8;
         }
+
+        .note-tags {
+            font-size: 12px;
+            color: #667eea;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        .note-location {
+            font-size: 12px;
+            color: #555;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -353,13 +368,34 @@
 
                 <div id="editorForm" style="display: none;">
                     <div class="form-group">
-                        <label class="form-label" for="noteTitle">Title</label>
-                        <input type="text" class="form-input" id="noteTitle" placeholder="Enter note title...">
+                        <label class="form-label" for="noteTitle">Title <span style="color: red;">*</span></label>
+                        <input type="text" class="form-input" id="noteTitle" placeholder="Enter note title..." required>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="noteContent">Content</label>
-                        <textarea class="form-textarea" id="noteContent" placeholder="Start writing your note..."></textarea>
+                        <label class="form-label" for="noteContent">Content <span style="color: red;">*</span></label>
+                        <textarea class="form-textarea" id="noteContent" placeholder="Start writing your note..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="noteLocation">Location <span style="color: #666; font-weight: normal; font-size: 0.9em;">(Optional)</span></label>
+                        <input type="text" class="form-input" id="noteLocation" placeholder="Location">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="noteTags">Tags <span style="color: #666; font-weight: normal; font-size: 0.9em;">(Optional, comma-separated)</span></label>
+                        <input type="text" class="form-input" id="noteTags" placeholder="Tags (comma-separated)">
+                    </div>
+
+                    <div style="display: flex; gap: 20px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label" for="noteEventDate">Event Date <span style="color: #666; font-weight: normal; font-size: 0.9em;">(Optional)</span></label>
+                            <input type="date" class="form-input" id="noteEventDate">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label" for="noteEventTime">Event Time <span style="color: #666; font-weight: normal; font-size: 0.9em;">(Optional)</span></label>
+                            <input type="time" class="form-input" id="noteEventTime">
+                        </div>
                     </div>
                 </div>
 
@@ -412,7 +448,11 @@
                 
                 try {
                     const response = await fetch('/api/notes');
-                    if (!response.ok) throw new Error('Failed to load notes');
+                    if (!response.ok) {
+                        const text = await response.text();
+                        console.error('Server Error:', text);
+                        throw new Error(`Server returned ${response.status}`);
+                    }
                     
                     this.notes = await response.json();
                     this.renderNotesList();
@@ -437,7 +477,12 @@
                          data-note-id="${note.id}" onclick="noteTaker.selectNote(${note.id})">
                         <div class="note-title">${this.escapeHtml(note.title || 'Untitled')}</div>
                         <div class="note-preview">${this.escapeHtml(note.content || 'No content')}</div>
-                        <div class="note-date">${this.formatDate(note.updated_at)}</div>
+                        ${note.location ? `<div class="note-location">📍 ${this.escapeHtml(note.location)}</div>` : ''}
+                        <div class="note-tags">${this.escapeHtml(this.formatTags(note.tags))}</div>
+                        <div class="note-date">
+                            ${this.formatDate(note.updated_at)}
+                            ${note.event_date ? ` • ${note.event_date} ${note.event_time || ''}` : ''}
+                        </div>
                     </div>
                 `).join('');
             }
@@ -452,6 +497,10 @@
                 
                 document.getElementById('noteTitle').value = note.title || '';
                 document.getElementById('noteContent').value = note.content || '';
+                document.getElementById('noteLocation').value = note.location || '';
+                document.getElementById('noteTags').value = note.tags || '';
+                document.getElementById('noteEventDate').value = note.event_date || '';
+                document.getElementById('noteEventTime').value = note.event_time || '';
                 document.getElementById('editorTitle').textContent = note.title || 'Untitled Note';
             }
 
@@ -460,6 +509,10 @@
                     id: null,
                     title: '',
                     content: '',
+                    location: '',
+                    tags: '',
+                    event_date: null,
+                    event_time: null,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 };
@@ -467,6 +520,10 @@
                 this.showEditor();
                 document.getElementById('noteTitle').value = '';
                 document.getElementById('noteContent').value = '';
+                document.getElementById('noteLocation').value = '';
+                document.getElementById('noteTags').value = '';
+                document.getElementById('noteEventDate').value = '';
+                document.getElementById('noteEventTime').value = '';
                 document.getElementById('editorTitle').textContent = 'New Note';
                 document.getElementById('noteTitle').focus();
                 
@@ -501,6 +558,10 @@
 
                 const title = document.getElementById('noteTitle').value.trim();
                 const content = document.getElementById('noteContent').value.trim();
+                const location = document.getElementById('noteLocation').value.trim();
+                const tags = document.getElementById('noteTags').value.trim();
+                const eventDate = document.getElementById('noteEventDate').value;
+                const eventTime = document.getElementById('noteEventTime').value;
 
                 if (!title && !content) {
                     if (!isAutoSave) {
@@ -512,7 +573,11 @@
                 try {
                     const noteData = {
                         title: title || 'Untitled',
-                        content: content
+                        content: content,
+                        location: location,
+                        tags: tags,
+                        event_date: eventDate || null,
+                        event_time: eventTime || null
                     };
 
                     let response;
@@ -598,7 +663,12 @@
                          data-note-id="${note.id}" onclick="noteTaker.selectNote(${note.id})">
                         <div class="note-title">${this.escapeHtml(note.title || 'Untitled')}</div>
                         <div class="note-preview">${this.escapeHtml(note.content || 'No content')}</div>
-                        <div class="note-date">${this.formatDate(note.updated_at)}</div>
+                        ${note.location ? `<div class="note-location">📍 ${this.escapeHtml(note.location)}</div>` : ''}
+                        <div class="note-tags">${this.escapeHtml(this.formatTags(note.tags))}</div>
+                        <div class="note-date">
+                            ${this.formatDate(note.updated_at)}
+                            ${note.event_date ? ` • ${note.event_date} ${note.event_time || ''}` : ''}
+                        </div>
                     </div>
                 `).join('');
             }
@@ -620,6 +690,15 @@
                 const div = document.createElement('div');
                 div.textContent = text;
                 return div.innerHTML;
+            }
+
+            formatTags(tags) {
+                if (!tags) return '';
+                return tags.split(',')
+                    .map(tag => tag.trim())
+                    .filter(tag => tag.length > 0)
+                    .map(tag => `#${tag}`)
+                    .join(' ');
             }
 
             formatDate(dateString) {
