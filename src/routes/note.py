@@ -95,6 +95,7 @@ def create_note():
             try:
                 note.event_date = datetime.strptime(data['event_date'], '%Y-%m-%d').date()
             except ValueError:
+                # Silently ignore invalid date format; field will remain None
                 pass
         if 'event_time' in data and data['event_time']:
             parsed_time = parse_time_string(data['event_time'])
@@ -142,6 +143,7 @@ def update_note(note_id):
                 try:
                     note.event_date = datetime.strptime(data['event_date'], '%Y-%m-%d').date()
                 except ValueError:
+                    # Silently ignore invalid date format; field will remain unchanged
                     pass
             else:
                 note.event_date = None
