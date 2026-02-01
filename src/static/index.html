@@ -481,7 +481,7 @@
                         ${note.tags ? `<div class="note-tags">${this.escapeHtml(this.formatTags(note.tags))}</div>` : ''}
                         <div class="note-date">
                             ${this.formatDate(note.updated_at)}
-                            ${note.event_date ? ` • ${this.escapeHtml(note.event_date)} ${note.event_time ? this.escapeHtml(note.event_time) : ''}` : ''}
+                            ${note.event_date ? ` • ${this.escapeHtml(this.formatEventDate(note.event_date))} ${note.event_time ? this.escapeHtml(this.formatEventTime(note.event_time)) : ''}` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -667,7 +667,7 @@
                         ${note.tags ? `<div class="note-tags">${this.escapeHtml(this.formatTags(note.tags))}</div>` : ''}
                         <div class="note-date">
                             ${this.formatDate(note.updated_at)}
-                            ${note.event_date ? ` • ${this.escapeHtml(note.event_date)} ${this.escapeHtml(note.event_time || '')}` : ''}
+                            ${note.event_date ? ` • ${this.escapeHtml(this.formatEventDate(note.event_date))} ${note.event_time ? this.escapeHtml(this.formatEventTime(note.event_time)) : ''}` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -715,6 +715,42 @@
                     return `${diffDays - 1} days ago`;
                 } else {
                     return date.toLocaleDateString();
+                }
+            }
+
+            formatEventDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                // Validate the date is valid
+                if (isNaN(date.getTime())) {
+                    return dateString; // Return original string if date is invalid
+                }
+                return date.toLocaleDateString();
+            }
+
+            formatEventTime(timeString) {
+                if (!timeString) return '';
+                try {
+                    // Parse time string (HH:MM:SS format)
+                    const parts = timeString.split(':');
+                    if (parts.length < 2) return timeString; // Return as-is if not in expected format
+                    
+                    const hour = parseInt(parts[0], 10);
+                    const minute = parseInt(parts[1], 10);
+                    
+                    // Validate hour and minute ranges
+                    if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+                        return timeString; // Return original if validation fails
+                    }
+                    
+                    // Convert to 12-hour format
+                    const period = hour >= 12 ? 'PM' : 'AM';
+                    const hour12 = hour % 12 || 12;
+                    const minuteStr = minute.toString().padStart(2, '0');
+                    
+                    return `${hour12}:${minuteStr} ${period}`;
+                } catch (error) {
+                    return timeString; // Return original string if parsing fails
                 }
             }
         }
