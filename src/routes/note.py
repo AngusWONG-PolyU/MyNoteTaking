@@ -20,11 +20,17 @@ def create_note():
         
         note = Note(title=data['title'], content=data['content'])
         
-        # Add new fields
+        # Add new fields with validation
         if 'location' in data:
-            note.location = data['location']
+            location = data['location']
+            if location and len(location) > 200:
+                return jsonify({'error': 'Location must not exceed 200 characters'}), 400
+            note.location = location
         if 'tags' in data:
-            note.tags = data['tags']
+            tags = data['tags']
+            if tags and len(tags) > 200:
+                return jsonify({'error': 'Tags must not exceed 200 characters'}), 400
+            note.tags = tags
         if 'event_date' in data and data['event_date']:
             try:
                 note.event_date = datetime.strptime(data['event_date'], '%Y-%m-%d').date()
@@ -67,9 +73,15 @@ def update_note(note_id):
         note.content = data.get('content', note.content)
         
         if 'location' in data:
-            note.location = data['location']
+            location = data['location']
+            if location and len(location) > 200:
+                return jsonify({'error': 'Location must not exceed 200 characters'}), 400
+            note.location = location
         if 'tags' in data:
-            note.tags = data['tags']
+            tags = data['tags']
+            if tags and len(tags) > 200:
+                return jsonify({'error': 'Tags must not exceed 200 characters'}), 400
+            note.tags = tags
         if 'event_date' in data:
             if data['event_date']:
                 try:
