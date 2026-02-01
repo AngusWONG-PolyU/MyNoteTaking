@@ -22,12 +22,18 @@ def create_note():
         
         # Add new fields
         if 'location' in data:
-            if data['location'] is not None and len(str(data['location'])) > 200:
-                return jsonify({'error': 'Location must not exceed 200 characters'}), 400
+            if data['location'] is not None:
+                if not isinstance(data['location'], str):
+                    return jsonify({'error': 'Location must be a string'}), 400
+                if len(data['location']) > 200:
+                    return jsonify({'error': 'Location must not exceed 200 characters'}), 400
             note.location = data['location']
         if 'tags' in data:
-            if data['tags'] is not None and len(str(data['tags'])) > 200:
-                return jsonify({'error': 'Tags must not exceed 200 characters'}), 400
+            if data['tags'] is not None:
+                if not isinstance(data['tags'], str):
+                    return jsonify({'error': 'Tags must be a string'}), 400
+                if len(data['tags']) > 200:
+                    return jsonify({'error': 'Tags must not exceed 200 characters'}), 400
             note.tags = data['tags']
         if 'event_date' in data and data['event_date']:
             try:
@@ -71,12 +77,18 @@ def update_note(note_id):
         note.content = data.get('content', note.content)
         
         if 'location' in data:
-            if data['location'] is not None and len(str(data['location'])) > 200:
-                return jsonify({'error': 'Location must not exceed 200 characters'}), 400
+            if data['location'] is not None:
+                if not isinstance(data['location'], str):
+                    return jsonify({'error': 'Location must be a string'}), 400
+                if len(data['location']) > 200:
+                    return jsonify({'error': 'Location must not exceed 200 characters'}), 400
             note.location = data['location']
         if 'tags' in data:
-            if data['tags'] is not None and len(str(data['tags'])) > 200:
-                return jsonify({'error': 'Tags must not exceed 200 characters'}), 400
+            if data['tags'] is not None:
+                if not isinstance(data['tags'], str):
+                    return jsonify({'error': 'Tags must be a string'}), 400
+                if len(data['tags']) > 200:
+                    return jsonify({'error': 'Tags must not exceed 200 characters'}), 400
             note.tags = data['tags']
         if 'event_date' in data:
             if data['event_date']:
