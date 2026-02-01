@@ -4,6 +4,25 @@ from datetime import datetime
 
 note_bp = Blueprint('note', __name__)
 
+def validate_string_field(field_name, field_value, max_length=200):
+    """Validate that a field is a string and doesn't exceed max length.
+    
+    Args:
+        field_name: Name of the field for error messages
+        field_value: Value to validate
+        max_length: Maximum allowed length (default: 200)
+    
+    Returns:
+        tuple: (error_response, status_code) if validation fails, None if valid
+    """
+    if field_value is not None:
+        if not isinstance(field_value, str):
+            return jsonify({'error': f'{field_name} must be a string'}), 400
+        if len(field_value) > max_length:
+            return jsonify({'error': f'{field_name} must not exceed {max_length} characters'}), 400
+    return None
+
+
 @note_bp.route('/notes', methods=['GET'])
 def get_notes():
     """Get all notes, ordered by most recently updated"""
@@ -22,18 +41,14 @@ def create_note():
         
         # Add new fields
         if 'location' in data:
-            if data['location'] is not None:
-                if not isinstance(data['location'], str):
-                    return jsonify({'error': 'Location must be a string'}), 400
-                if len(data['location']) > 200:
-                    return jsonify({'error': 'Location must not exceed 200 characters'}), 400
+            validation_error = validate_string_field('Location', data['location'])
+            if validation_error:
+                return validation_error
             note.location = data['location']
         if 'tags' in data:
-            if data['tags'] is not None:
-                if not isinstance(data['tags'], str):
-                    return jsonify({'error': 'Tags must be a string'}), 400
-                if len(data['tags']) > 200:
-                    return jsonify({'error': 'Tags must not exceed 200 characters'}), 400
+            validation_error = validate_string_field('Tags', data['tags'])
+            if validation_error:
+                return validation_error
             note.tags = data['tags']
         if 'event_date' in data and data['event_date']:
             try:
@@ -77,18 +92,14 @@ def update_note(note_id):
         note.content = data.get('content', note.content)
         
         if 'location' in data:
-            if data['location'] is not None:
-                if not isinstance(data['location'], str):
-                    return jsonify({'error': 'Location must be a string'}), 400
-                if len(data['location']) > 200:
-                    return jsonify({'error': 'Location must not exceed 200 characters'}), 400
+            validation_error = validate_string_field('Location', data['location'])
+            if validation_error:
+                return validation_error
             note.location = data['location']
         if 'tags' in data:
-            if data['tags'] is not None:
-                if not isinstance(data['tags'], str):
-                    return jsonify({'error': 'Tags must be a string'}), 400
-                if len(data['tags']) > 200:
-                    return jsonify({'error': 'Tags must not exceed 200 characters'}), 400
+            validation_error = validate_string_field('Tags', data['tags'])
+            if validation_error:
+                return validation_error
             note.tags = data['tags']
         if 'event_date' in data:
             if data['event_date']:
