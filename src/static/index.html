@@ -667,7 +667,7 @@
                         <div class="note-tags">${this.escapeHtml(this.formatTags(note.tags))}</div>
                         <div class="note-date">
                             ${this.formatDate(note.updated_at)}
-                            ${note.event_date ? ` • ${this.escapeHtml(this.formatEventDate(note.event_date))} ${this.escapeHtml(this.formatEventTime(note.event_time || ''))}` : ''}
+                            ${note.event_date ? ` • ${this.escapeHtml(this.formatEventDate(note.event_date))} ${note.event_time ? this.escapeHtml(this.formatEventTime(note.event_time)) : ''}` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -732,13 +732,19 @@
                     if (parts.length < 2) return timeString; // Return as-is if not in expected format
                     
                     const hour = parseInt(parts[0], 10);
-                    const minute = parts[1]; // Keep as string for padding
+                    const minuteNum = parseInt(parts[1], 10);
+                    
+                    // Validate hour and minute ranges
+                    if (isNaN(hour) || isNaN(minuteNum) || hour < 0 || hour > 23 || minuteNum < 0 || minuteNum > 59) {
+                        return timeString; // Return original if validation fails
+                    }
                     
                     // Convert to 12-hour format
                     const period = hour >= 12 ? 'PM' : 'AM';
                     const hour12 = hour % 12 || 12;
+                    const minuteStr = minuteNum.toString().padStart(2, '0');
                     
-                    return `${hour12}:${minute.padStart(2, '0')} ${period}`;
+                    return `${hour12}:${minuteStr} ${period}`;
                 } catch (error) {
                     return timeString; // Return original string if parsing fails
                 }
