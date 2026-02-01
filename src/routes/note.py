@@ -1,8 +1,45 @@
 from flask import Blueprint, jsonify, request
 from src.models.note import Note, db
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 note_bp = Blueprint('note', __name__)
+
+def parse_time_string(time_str):
+    """
+    Parse a time string in various formats.
+    
+    Handles common time formats including:
+    - HH:MM
+    - HH:MM:SS
+    - HH:MM:SS.ffffff (with microseconds/milliseconds)
+    
+    Returns a time object if successful, None otherwise.
+    Logs a warning if parsing fails.
+    """
+    if not time_str:
+        return None
+    
+    # List of time formats to try, in order of preference
+    time_formats = [
+        '%H:%M:%S.%f',  # HH:MM:SS.ffffff (microseconds)
+        '%H:%M:%S',      # HH:MM:SS
+        '%H:%M',         # HH:MM
+    ]
+    
+    for fmt in time_formats:
+        try:
+            return datetime.strptime(time_str, fmt).time()
+        except ValueError:
+            continue
+    
+    # If all formats fail, log a warning
+    # Sanitize input for logging to prevent log injection
+    sanitized_input = repr(time_str)[:100]  # Limit length and use repr for safety
+    logger.warning(f"Failed to parse time string: {sanitized_input}. Supported formats: HH:MM, HH:MM:SS, HH:MM:SS.ffffff")
+    return None
 
 @note_bp.route('/notes', methods=['GET'])
 def get_notes():
@@ -41,14 +78,9 @@ def create_note():
             except ValueError:
                 pass
         if 'event_time' in data and data['event_time']:
-            try:
-                time_str = data['event_time']
-                if len(time_str) == 5: # HH:MM
-                    note.event_time = datetime.strptime(time_str, '%H:%M').time()
-                elif len(time_str) == 8: # HH:MM:SS
-                    note.event_time = datetime.strptime(time_str, '%H:%M:%S').time()
-            except ValueError:
-                pass
+            parsed_time = parse_time_string(data['event_time'])
+            if parsed_time:
+                note.event_time = parsed_time
                 
         db.session.add(note)
         db.session.commit()
@@ -100,14 +132,9 @@ def update_note(note_id):
                 note.event_date = None
         if 'event_time' in data:
             if data['event_time']:
-                try:
-                    time_str = data['event_time']
-                    if len(time_str) == 5:
-                        note.event_time = datetime.strptime(time_str, '%H:%M').time()
-                    elif len(time_str) == 8:
-                        note.event_time = datetime.strptime(time_str, '%H:%M:%S').time()
-                except ValueError:
-                    pass
+                parsed_time = parse_time_string(data['event_time'])
+                if parsed_time:
+                    note.event_time = parsed_time
             else:
                 note.event_time = None
         
